@@ -1,75 +1,51 @@
-# AeroTech Logistics & Flight Operations Analysis
+# AeroTech Flight Operations & Delay Analysis
 
-An end-to-end R data engineering and operational analysis pipeline built using the `nycflights13` dataset. This project cleans raw flight logs, engineers flight-speed metrics, identifies underperforming carriers, and isolates hourly departure bottlenecks.
+An R script that processes the `nycflights13` dataset to clean flight logs, calculate average airspeeds, and pinpoint where departure delays happen most often.
 
----
+## What This Script Does
 
-## 📋 Project Overview
+The code is split into three main sections:
 
-This script simulates a real-world data engineering and process optimization workflow for **AeroTech**, focusing on three core areas:
+1. **Data Cleaning & Feature Creation (`aerotech_clean`)**
+   * Drops rows missing `dep_time`, `arr_time`, or `air_time` so they don't break downstream math.
+   * Calculates flight speed in miles per hour (`speed_mph = distance / (air_time / 60)`).
+   * Filters the data down to long-haul routes over 400 miles.
 
-1. **Data Engineering & Feature Creation (`aerotech_clean`):** Filters out incomplete flight records, calculates average flight speed in miles per hour (`speed_mph`), and isolates long-haul routes (`distance > 400` miles).
-2. **Quality Engineering (`carrier_fault_analysis`):** Evaluates airline reliability by calculating average departure delays, total flight volume, and maximum delay spikes to rank the top 5 worst-performing carriers.
-3. **Process Optimization (`hourly_bottlenecks`):** Aggregates departure delays by scheduled departure hour to pinpoint peak congestion windows and operational bottlenecks.
+2. **Carrier Reliability (`carrier_fault_analysis`)**
+   * Groups the cleaned flights by `carrier` to find each airline's average delay, total flight count, and worst single delay.
+   * Sorts the results and pulls the top 5 carriers with the highest average departure delays.
 
----
+3. **Hourly Bottlenecks (`hourly_bottlenecks`)**
+   * Groups flights by their scheduled departure `hour` to calculate the average delay for each hour of the day.
+   * Ranks the hours from worst to best to highlight peak congestion windows.
 
-## 🛠️ Prerequisites & Setup
+## Setup & Requirements
 
-To run this analysis, you need **R** (version 4.0 or higher recommended) and the following CRAN packages:
-
-* `tidyverse` (for data manipulation via `dplyr`)
-* `nycflights13` (for the underlying `flights` dataset)
-
-### Installation
-
-Run the following commands in your R console to install the required packages (only needed once):
+You'll need R installed along with two packages: `tidyverse` and `nycflights13`. If you don't have them yet, run this once in your R console:
 
 ```r
 install.packages("tidyverse")
 install.packages("nycflights13")
 ```
 
----
+## Running the Code
 
-## 🚀 How to Run the Script
+1. Download the `.R` file from this repository.
+2. Open it in RStudio (or your preferred R editor).
+3. Run the full script. All three summary tables will print directly to your console.
 
-1. Clone this repository or download the `.R` script file to your local machine.
-2. Open the script in **RStudio** or your preferred R environment.
-3. Run the entire script (`Ctrl + Alt + R` on Windows/Linux or `Cmd + Option + R` on macOS).
+## Key Variables Used
 
----
+* `carrier`: Two-letter airline code.
+* `distance`: Flight distance in miles (filtered to `> 400`).
+* `air_time`: Total time spent in the air, in minutes.
+* `speed_mph`: Custom column showing average flight speed in mph.
+* `dep_delay`: Departure delay in minutes (negative numbers mean the flight left early).
+* `hour`: Scheduled departure hour (0 to 23).
 
-## 📊 Script Breakdown & Outputs
+## Future Improvements
 
-### 1. Data Cleaning & Feature Engineering
-* **Logic:** Removes rows with `NA` values in `dep_time`, `arr_time`, and `air_time`, creates `speed_mph = distance / (air_time / 60)`, and filters for routes longer than 400 miles.
-* **Console Output:** Prints a preview of the cleaned dataset showing `carrier`, `flight`, `distance`, `air_time`, and the newly engineered `speed_mph` column.
+* Join the `airlines` table from `nycflights13` to show full airline names instead of just two-letter codes.
+* Build a few quick `ggplot2` charts to visualize the hourly delay spikes.
+* Save the output tables as `.csv` files.
 
-### 2. Carrier Reliability Analysis
-* **Logic:** Groups cleaned data by `carrier`, computes `avg_delay`, `total_flights`, and `max_delay`, and extracts the 5 airlines with the highest average departure delays.
-* **Console Output:** Displays a ranked summary table of the 5 least reliable carriers.
-
-### 3. Hourly Operational Bottlenecks
-* **Logic:** Groups flights by scheduled departure `hour` and ranks them in descending order based on `avg_hourly_delay`.
-* **Console Output:** Displays a chronological breakdown sorted from the highest-delay hours to the smoothest operating hours.
-
----
-
-## 📁 Data Dictionary (Key Engineered & Used Variables)
-
-| Variable | Type | Description |
-| :--- | :--- | :--- |
-| `carrier` | Character | Two-letter airline carrier abbreviation. |
-| `distance` | Numeric | Distance between airports, in miles (filtered to `> 400`). |
-| `air_time` | Numeric | Amount of time spent in the air, in minutes. |
-| `speed_mph` | Numeric | **Engineered:** Average flight speed calculated in miles per hour. |
-| `dep_delay` | Numeric | Departure delay, in minutes (negative values indicate early departures). |
-| `hour` | Numeric | Scheduled hour of departure (0–23). |
-
----
-
-## 💡 Potential Next Steps
-* Add `ggplot2` visualizations to plot hourly delay trends and carrier comparisons.
-* Export the resulting summary tables (`carrier_fault_analysis` and `hourly_bottlenecks`) to `.csv` files for stakeholder reporting.
-* Join the `airlines` table from `nycflights13` to display full airline names alongside carrier codes.
